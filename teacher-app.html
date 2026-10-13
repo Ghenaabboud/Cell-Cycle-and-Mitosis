@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Teacher Panel · Cell Cycle and Mitosis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Lexend:wght@400;500;700&display=swap">
+<style>
+/* Layout: sign-in card, then summary tiles, filters, a student table and a most-missed list. Same stain palette as the student page. */
+:root {
+  --bg: #F8F4F7; --surface: #FFFFFF; --ink: #261B30; --muted: #6B5F73; --line: #E4D9E3; --chip: #F1E8F0;
+  --stain: #5B2A86; --eosin-edge: #C9557C; --gold: #E9A92B; --good: #1F8A4C; --bad: #C2413B;
+  --display: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --body: "Lexend", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #17111C; --surface: #221A29; --ink: #F3EAF5; --muted: #B8A9BF; --line: #3A2E42; --chip: #2E2337;
+  --stain: #C29BEA; --eosin-edge: #F08BAE; --gold: #F4C152; --good: #5ACB86; --bad: #F2847D; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #17111C; --surface: #221A29; --ink: #F3EAF5; --muted: #B8A9BF; --line: #3A2E42; --chip: #2E2337;
+  --stain: #C29BEA; --eosin-edge: #F08BAE; --gold: #F4C152; --good: #5ACB86; --bad: #F2847D; color-scheme: dark }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.5; padding-inline: 16px; padding-block: 0 48px; }
+.wrap { max-width: 1200px; margin: 0 auto; display: grid; gap: 24px; padding-top: 24px; }
+h1, h2 { font-family: var(--display); margin: 0; line-height: 1.1; text-wrap: balance; }
+h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; }
+h2 { font-size: 1.3rem; font-weight: 600; }
+p { margin: 0; }
+.eyebrow { font-size: .78rem; text-transform: uppercase; letter-spacing: .12em; font-weight: 700; color: var(--eosin-edge); }
+.muted { color: var(--muted); }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 18px; }
+.login { max-width: 520px; display: grid; gap: 12px; }
+label { display: grid; gap: 6px; font-weight: 600; }
+input, select { padding: 9px 12px; border-radius: 12px; border: 2px solid var(--line); background: var(--bg); min-width: 0; }
+.btn { background: var(--stain); color: var(--surface); border: 0; border-radius: 999px; padding: 9px 20px; font-weight: 700; }
+.ghost { background: transparent; border: 2px solid var(--stain); color: var(--stain); border-radius: 999px; padding: 7px 16px; font-weight: 700; }
+.err { color: var(--bad); font-weight: 600; min-height: 1.3em; }
+.top { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; justify-content: space-between; }
+.top .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 760px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px; display: grid; gap: 2px; }
+.tile b { font-family: var(--display); font-size: 2rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.tile span { color: var(--muted); font-size: .88rem; }
+.filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+.filters label { font-size: .85rem; }
+.tablewrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; }
+table { border-collapse: collapse; width: 100%; min-width: 900px; font-size: .92rem; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+th { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); background: var(--chip); position: sticky; top: 0; }
+tbody tr { cursor: pointer; }
+tbody tr:hover td { background: var(--chip); }
+.dots { display: inline-flex; gap: 4px; align-items: center; }
+.dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--line); }
+.dot.on { background: var(--good); border-color: var(--good); }
+.lv { display: inline-flex; gap: 4px; flex-wrap: wrap; }
+.lvl { border-radius: 8px; padding: 2px 7px; font-size: .78rem; font-weight: 700; background: var(--chip); color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.lvl.star { background: color-mix(in srgb, var(--gold) 35%, var(--surface)); color: var(--ink); }
+.lvl.try { background: color-mix(in srgb, var(--bad) 15%, var(--surface)); color: var(--ink); }
+.ago { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ago.live { color: var(--good); font-weight: 700; }
+.detail td { background: var(--bg); cursor: default; }
+.detail ul { margin: 6px 0 0; padding-left: 20px; }
+.split { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; }
+.missed ol { margin: 8px 0 0; padding-left: 22px; display: grid; gap: 6px; }
+.missed li span { color: var(--muted); font-variant-numeric: tabular-nums; }
+.empty { padding: 24px; text-align: center; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">EISM Science · Teacher only</div>
+    <h1>Teacher Panel: Cell Cycle and Mitosis</h1>
+  </header>
+
+  <!-- ===== dashboard ===== -->
+  <main id="dash">
+    <div class="wrap" style="padding-top:0">
+      <div class="top">
+        <p class="muted" id="updated" aria-live="polite"></p>
+        <div class="actions">
+          <label style="display:flex;gap:8px;align-items:center;font-weight:500"><input type="checkbox" id="auto" checked> Auto-refresh every 30 s</label>
+          <button class="ghost" id="refresh" type="button">Refresh now</button>
+          <a class="ghost" id="sheetLink" href="#" target="_blank" rel="noopener" hidden style="text-decoration:none">Open Google Sheet</a>
+        </div>
+      </div>
+      <div class="tiles" id="tiles"></div>
+      <div class="filters">
+        <label for="fClass">Class<select id="fClass"><option value="">All classes</option></select></label>
+        <label for="fName">Find a student<input id="fName" placeholder="Type a name"></label>
+        <label for="fSort">Sort by<select id="fSort">
+          <option value="name">Name</option><option value="progress">Least progress first</option><option value="active">Most recently active</option>
+        </select></label>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Student</th><th>Class</th><th>Steps (1–6)</th><th>Checkpoint A · cell cycle</th><th>Checkpoint B · mitosis</th><th>Last active</th><th>Last action</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <p class="muted">Tap a student to see the checkpoint questions they got wrong. ★ = star earned (3/4 or more).</p>
+      <section class="card missed">
+        <h2>Most missed checkpoint questions</h2>
+        <p class="muted">From each student’s latest attempt, for the students shown above. Use these to re-teach.</p>
+        <ol id="missed"></ol>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  let data = [], open = new Set(), timer = null;
+  const GAS = (typeof google !== 'undefined' && google.script && google.script.run) ? google.script.run : null;
+  $('refresh').addEventListener('click', load);
+  $('auto').addEventListener('change', setTimer);
+  ['fClass', 'fName', 'fSort'].forEach(id => $(id).addEventListener('input', render));
+  function setTimer() { clearInterval(timer); if ($('auto').checked) timer = setInterval(load, 30000); }
+  function load() {
+    if (!GAS) { $('updated').textContent = 'Open this panel from your Apps Script link (your Web app URL + ?page=teacher).'; render(); return; }
+    $('updated').textContent = 'Loading…';
+    google.script.run
+      .withSuccessHandler(json => {
+        data = json.rows || [];
+        $('updated').textContent = 'Updated ' + new Date(json.updated || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' · ' + data.length + ' students';
+        if (json.sheetUrl) { $('sheetLink').href = json.sheetUrl; $('sheetLink').hidden = false; }
+        fillClasses(); render();
+      })
+      .withFailureHandler(err => { $('updated').textContent = 'Could not load: ' + (err && err.message || err); })
+      .getAll();
+  }
+  function fillClasses() {
+    const sel = $('fClass'), cur = sel.value;
+    const classes = [...new Set(data.map(r => String(r.cls)))].sort();
+    sel.innerHTML = '<option value="">All classes</option>' + classes.map(c => `<option>${esc(c)}</option>`).join('');
+    sel.value = classes.includes(cur) ? cur : '';
+  }
+
+  const STEPS = ['s1', 's2', 's3', 's4', 's5', 's6'];
+  const stepCount = r => STEPS.filter(k => r.steps && r.steps[k]).length;
+  const stars = (r, cp) => ['f', 'c', 'e'].filter(t => r[cp] && r[cp][t]).length;
+  function shown() {
+    const c = $('fClass').value, q = $('fName').value.trim().toLowerCase();
+    let rows = data.filter(r => (!c || String(r.cls) === c) && (!q || String(r.name).toLowerCase().includes(q)));
+    const s = $('fSort').value;
+    rows.sort((a, b) => s === 'progress' ? (stepCount(a) + stars(a, 'cpA') + stars(a, 'cpB')) - (stepCount(b) + stars(b, 'cpA') + stars(b, 'cpB'))
+      : s === 'active' ? new Date(b.lastActive) - new Date(a.lastActive)
+      : String(a.name).localeCompare(String(b.name)));
+    return rows;
+  }
+  function levels(r, cp) {
+    const out = ['f', 'c', 'e'].map((t, i) => {
+      const q = r.quiz && r.quiz[cp + '-' + t]; if (!q) return '';
+      const won = r[cp] && r[cp][t];
+      return `<span class="lvl ${won ? 'star' : 'try'}" title="Best ${q.best}/4 in ${q.tries} ${q.tries === 1 ? 'try' : 'tries'}">${won ? '★ ' : ''}L${i + 1} ${q.best}/4</span>`;
+    }).join('');
+    return out ? `<span class="lv">${out}</span>` : '<span class="muted">Not started</span>';
+  }
+  function ago(iso) {
+    const m = Math.round((Date.now() - new Date(iso)) / 60000);
+    if (isNaN(m)) return ['—', ''];
+    if (m < 2) return ['Now', 'live'];
+    if (m < 60) return [m + ' min ago', m < 10 ? 'live' : ''];
+    const h = Math.round(m / 60); if (h < 24) return [h + ' h ago', ''];
+    return [new Date(iso).toLocaleDateString(), ''];
+  }
+  function render() {
+    const rows = shown();
+    const n = rows.length;
+    const tile = (v, l) => `<div class="tile"><b>${v}</b><span>${l}</span></div>`;
+    $('tiles').innerHTML = tile(n, 'students') + tile(rows.filter(r => stepCount(r) === 6).length, 'finished all 6 steps')
+      + tile(rows.filter(r => stars(r, 'cpA') > 0).length, 'have a star in Checkpoint A') + tile(rows.filter(r => stars(r, 'cpB') > 0).length, 'have a star in Checkpoint B');
+    if (!n) { $('rows').innerHTML = `<tr><td colspan="7" class="empty">${data.length ? 'No students match these filters.' : 'No students yet. When students sign in on the student page, they appear here.'}</td></tr>`; $('missed').innerHTML = ''; return; }
+    $('rows').innerHTML = rows.map(r => {
+      const [a, cls] = ago(r.lastActive);
+      const dots = STEPS.map(k => `<span class="dot${r.steps && r.steps[k] ? ' on' : ''}" title="Step ${k.slice(1)}"></span>`).join('');
+      let html = `<tr data-id="${esc(r.id)}"><td><b>${esc(r.name)}</b><div class="muted" style="font-size:.8rem">${esc(r.email || '')}</div></td><td>${esc(r.cls)}</td><td><span class="dots" aria-label="${stepCount(r)} of 6 steps">${dots}</span> ${stepCount(r)}/6</td>
+        <td>${levels(r, 'cpA')}</td><td>${levels(r, 'cpB')}</td><td class="ago ${cls}">${a}</td><td class="muted">${esc(r.lastAction)}</td></tr>`;
+      if (open.has(r.id)) {
+        const parts = [];
+        [['cpA', 'Checkpoint A'], ['cpB', 'Checkpoint B']].forEach(([cp, label]) => ['f', 'c', 'e'].forEach((t, i) => {
+          const q = r.quiz && r.quiz[cp + '-' + t]; if (!q) return;
+          const wrong = (q.wrong || []).map(w => `<li>${esc(w)}</li>`).join('');
+          parts.push(`<div><b>${label} · Level ${i + 1}</b> · best ${q.best}/4, last ${q.last}/4, ${q.tries} ${q.tries === 1 ? 'try' : 'tries'}${wrong ? `<ul>${wrong}</ul>` : '<div class="muted">No mistakes in the last attempt.</div>'}</div>`);
+        }));
+        html += `<tr class="detail"><td colspan="7">${parts.join('') || '<span class="muted">No checkpoint attempts yet.</span>'}</td></tr>`;
+      }
+      return html;
+    }).join('');
+    $('rows').querySelectorAll('tr[data-id]').forEach(tr => tr.addEventListener('click', () => { const id = tr.dataset.id; open.has(id) ? open.delete(id) : open.add(id); render(); }));
+    const count = {};
+    rows.forEach(r => Object.values(r.quiz || {}).forEach(q => (q.wrong || []).forEach(w => count[w] = (count[w] || 0) + 1)));
+    const top = Object.entries(count).sort((a, b) => b[1] - a[1]).slice(0, 8);
+    $('missed').innerHTML = top.length ? top.map(([q, c]) => `<li>${esc(q)} <span>· ${c} ${c === 1 ? 'student' : 'students'}</span></li>`).join('') : '<li class="muted">No mistakes recorded yet.</li>';
+  }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+  load(); setTimer();
+})();
+</script>
+</body>
+</html>
