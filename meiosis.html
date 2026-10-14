@@ -58,8 +58,8 @@ canvas.sim { width: 100%; height: auto; aspect-ratio: 3 / 2; display: block; bor
 .btn2 { background: var(--chip); border: 0; border-radius: 999px; padding: 8px 14px; font-weight: 600; }
 .btn2[aria-pressed="true"] { background: var(--gold); color: #261B30; }
 .btn2:disabled { opacity: .45; cursor: not-allowed; }
-.steps { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 5px; }
-@media (max-width: 600px) { .steps { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.steps { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 5px; }
+@media (max-width: 600px) { .steps { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
 .step { border: 2px solid var(--line); background: var(--surface); border-radius: 10px; padding: 6px 2px; font-size: .72rem; font-weight: 700; display: grid; justify-items: center; gap: 1px; line-height: 1.15; text-align: center; }
 .step b { font-family: var(--display); font-size: 1rem; color: var(--eosin-edge); }
 .step.two b { color: var(--dad); }
@@ -146,7 +146,7 @@ footer { color: var(--muted); font-size: .85rem; }
         <button class="btn2" id="shuffle" type="button">🔀 Shuffle line-up</button>
       </div>
       <div class="steps" id="steps" role="list"></div>
-      <div class="legend"><span><span class="sw" style="background:var(--mum)"></span>from mum</span><span><span class="sw" style="background:var(--dad)"></span>from dad</span><span>Meiosis I = steps 2–5 · Meiosis II = steps 6–8</span></div>
+      <div class="legend"><span><span class="sw" style="background:var(--mum)"></span>from mum</span><span><span class="sw" style="background:var(--dad)"></span>from dad</span><span>Meiosis I = steps 2–5 · Meiosis II = steps 6–9</span></div>
     </div>
     <div class="info" aria-live="polite">
       <div><div class="tag" id="sTag"></div><h2 id="sName"></h2></div>
@@ -161,7 +161,7 @@ footer { color: var(--muted); font-size: .85rem; }
     <div class="tasks">
       <h3>Your simulator tasks (answer in your book)</h3>
       <ol>
-        <li>Step through all 8 stages. How many cells are there at the end, and how many chromosomes are in each one?</li>
+        <li>Step through all 9 stages. How many cells are there at the end, and how many chromosomes are in each one?</li>
         <li>At <b>Prophase I</b>, turn crossing over off and on. Describe what changes on the chromosomes.</li>
         <li>At <b>Metaphase I</b>, press <b>Shuffle line-up</b> three times, then go to the end each time. Draw the four gametes you get.</li>
         <li>Use the Gamete Factory below. Why are no two of your gametes the same?</li>
@@ -246,10 +246,10 @@ footer { color: var(--muted); font-size: .85rem; }
 
   const STAGES = [
     { name: 'Interphase', key: 'I', tag: 'Before meiosis · Copy the DNA', cells: '1 cell', chrom: '4 chromosomes (2n)',
-      facts: ['The cell grows and <span class="kw">copies its DNA</span> (S phase).', 'Each chromosome is now two identical <span class="kw">sister chromatids</span>.', 'There are still 4 chromosomes: two <span class="kw">homologous pairs</span>.'],
+      facts: ['The DNA is long and thin (<span class="kw">chromatin</span>), so you cannot see separate chromosomes yet.', 'The cell grows and <span class="kw">copies its DNA</span> (S phase). Each strand now has an identical copy.', 'There are 4 chromosomes’ worth of DNA: two from <span class="mum">mum</span> and two from <span class="dad">dad</span>.'],
       mem: 'Same as before mitosis: copy everything first.' },
     { name: 'Prophase I', key: 'P I', tag: 'Meiosis I · Pair up and swap', cells: '1 cell', chrom: '4 chromosomes (2n)', img: 'p1',
-      facts: ['Chromosomes condense. <span class="kw">Homologous chromosomes</span> (mum’s and dad’s) pair up side by side, making a <span class="kw">tetrad</span>.', '<span class="kw">Crossing over:</span> the pairs swap matching pieces of DNA.', 'The nuclear envelope breaks down.'],
+      facts: ['The chromatin <span class="kw">coils up</span> into thick chromosomes, each made of two sister chromatids. <span class="kw">Homologous chromosomes</span> (mum’s and dad’s) pair up side by side, making a <span class="kw">tetrad</span>.', '<span class="kw">Crossing over:</span> the pairs swap matching pieces of DNA.', 'The nuclear envelope breaks down.'],
       mem: 'Partners hold hands and swap bracelets.' },
     { name: 'Metaphase I', key: 'M I', tag: 'Meiosis I · Pairs line up', cells: '1 cell', chrom: '4 chromosomes (2n)', img: 'm1',
       facts: ['The <span class="kw">pairs</span> line up along the middle of the cell, side by side.', 'Which side mum’s and dad’s chromosomes face is <span class="kw">random</span> (independent assortment). Press <b>Shuffle line-up</b>!'],
@@ -258,10 +258,13 @@ footer { color: var(--muted); font-size: .85rem; }
       facts: ['Spindle fibres pull the <span class="kw">homologous chromosomes</span> apart to opposite ends.', 'The sister chromatids <b>stay together</b>.'],
       mem: 'Partners separate; twins stay together.' },
     { name: 'Telophase I', key: 'T I', tag: 'Meiosis I · Two cells', cells: '2 cells', chrom: '2 chromosomes each (n)',
-      facts: ['The cell divides into <span class="kw">two cells</span>.', 'Each cell has <b>one</b> chromosome from each pair, so it is now <span class="kw">haploid (n)</span>.', 'Each chromosome still has two chromatids.'],
+      facts: ['The cell divides into <span class="kw">two cells</span>.', 'Each cell has <b>one</b> chromosome from each pair, so it is now <span class="kw">haploid (n)</span>.', 'A nuclear envelope forms around each set. Each chromosome still has two chromatids.'],
       mem: 'The number of chromosomes halves in meiosis I.' },
+    { name: 'Prophase II', key: 'P II', tag: 'Meiosis II · Get ready again', cells: '2 cells', chrom: '2 chromosomes each (n)',
+      facts: ['There is <b>no</b> DNA copying between meiosis I and meiosis II.', 'In each cell, the <span class="kw">nuclear envelope breaks down</span> again.', 'A <span class="kw">new spindle</span> starts to form, at right angles to the first one.'],
+      mem: 'Like prophase in mitosis, but with only half the chromosomes.' },
     { name: 'Metaphase II', key: 'M II', tag: 'Meiosis II · Line up again', cells: '2 cells', chrom: '2 chromosomes each (n)',
-      facts: ['There is <b>no</b> DNA copying before meiosis II.', 'In each cell, chromosomes line up in <b>single file</b> along the middle, like in mitosis.'],
+      facts: ['In each cell, chromosomes line up in <b>single file</b> along the middle, like in mitosis.'],
       mem: 'Meiosis II works like mitosis.' },
     { name: 'Anaphase II', key: 'A II', tag: 'Meiosis II · Twins split up', cells: '2 cells', chrom: '2 chromosomes each (n)',
       facts: ['Spindle fibres pull the <span class="kw">sister chromatids</span> apart to opposite ends of each cell.'],
@@ -285,15 +288,16 @@ footer { color: var(--muted); font-size: .85rem; }
       case 2: return { x: side * 17 + sDir * 6, y: pairY[c.P], a: 0, sc: 1, join: 1 };
       case 3: return { x: side * 135 + sDir * 6, y: pairY[c.P] * .8, a: 0, sc: 1, join: 1 };
       case 4: return { x: cellX + sDir * 6, y: pairY[c.P] * .7, a: 0, sc: 1, join: 1 };
-      case 5: return { x: cellX + sDir * 6, y: c.P === 'A' ? -48 : 48, a: 0, sc: 1, join: 1 };
-      case 6: return { x: cellX + sDir * 70, y: c.P === 'A' ? -45 : 45, a: 0, sc: 1, join: 0 };
+      case 5: return { x: cellX + (c.P === 'A' ? -28 : 30) + sDir * 6, y: c.P === 'A' ? -30 : 38, a: c.P === 'A' ? .5 : -.4, sc: 1, join: 1 };
+      case 6: return { x: cellX + sDir * 6, y: c.P === 'A' ? -48 : 48, a: 0, sc: 1, join: 1 };
+      case 7: return { x: cellX + sDir * 70, y: c.P === 'A' ? -45 : 45, a: 0, sc: 1, join: 0 };
       default: return { x: cellX + sDir * 74 + (c.P === 'A' ? -13 : 13), y: 6, a: 0, sc: .75, join: 0 };
     }
   }
   function cellsFor(st) {
     if (st <= 3) return [{ x: 0, y: 0, rx: st === 3 ? 205 : 160, ry: st === 3 ? 125 : 140 }];
-    if (st <= 5) return [{ x: -150, y: 0, rx: 120, ry: 125 }, { x: 150, y: 0, rx: 120, ry: 125 }];
-    if (st === 6) return [{ x: -150, y: 0, rx: 136, ry: 108 }, { x: 150, y: 0, rx: 136, ry: 108 }];
+    if (st <= 6) return [{ x: -150, y: 0, rx: 120, ry: 125 }, { x: 150, y: 0, rx: 120, ry: 125 }];
+    if (st === 7) return [{ x: -150, y: 0, rx: 136, ry: 108 }, { x: 150, y: 0, rx: 136, ry: 108 }];
     return [{ x: -224, y: 0, rx: 66, ry: 66 }, { x: -76, y: 0, rx: 66, ry: 66 }, { x: 76, y: 0, rx: 66, ry: 66 }, { x: 224, y: 0, rx: 66, ry: 66 }];
   }
 
@@ -304,6 +308,22 @@ footer { color: var(--muted); font-size: .85rem; }
     ctx.strokeStyle = C[c.top]; ctx.beginPath(); ctx.moveTo(0, -L); ctx.lineTo(0, 0); ctx.stroke();
     ctx.strokeStyle = C[c.bot]; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, L * .8); ctx.stroke();
     ctx.restore(); ctx.globalAlpha = 1;
+  }
+  // chromatin threads: 4 chromosomes x 2 copies, as long squiggles inside the nucleus
+  const CHROMATIN = (() => { let seed = 7; const r = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+    const out = [];
+    [['mum', -30, -25], ['dad', 28, -20], ['mum', -22, 30], ['dad', 30, 28]].forEach(([col, cx, cy]) => [0, 1].forEach(copy => {
+      const pts = []; let x = cx + copy * 6, y = cy + copy * 5;
+      for (let i = 0; i < 26; i++) { pts.push([x, y]); x += (r() - .5) * 26; y += (r() - .5) * 26; const d = Math.hypot(x, y); if (d > 70) { x *= 68 / d; y *= 68 / d; } }
+      out.push({ col, pts });
+    }));
+    return out; })();
+  function drawChromatin(ctx, alpha) {
+    ctx.save(); ctx.globalAlpha = alpha; ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    CHROMATIN.forEach(t => { ctx.strokeStyle = C[t.col]; ctx.beginPath(); ctx.moveTo(t.pts[0][0], t.pts[0][1]);
+      for (let i = 1; i < t.pts.length - 1; i++) { const mx = (t.pts[i][0] + t.pts[i + 1][0]) / 2, my = (t.pts[i][1] + t.pts[i + 1][1]) / 2; ctx.quadraticCurveTo(t.pts[i][0], t.pts[i][1], mx, my); }
+      ctx.stroke(); });
+    ctx.restore();
   }
   function setup(canvas, W, H) {
     const dpr = window.devicePixelRatio || 1, cw = canvas.clientWidth || W;
@@ -327,10 +347,13 @@ footer { color: var(--muted); font-size: .85rem; }
     // nucleus at interphase / end
     const nucA = from === 0 ? 1 : 0, nucB = cur === 0 ? 1 : 0, nuc = lerp(nucA, nucB, k);
     if (nuc > .02) { ctx.globalAlpha = nuc; ctx.beginPath(); ctx.arc(0, 0, 85, 0, Math.PI * 2); ctx.fillStyle = C.nuc; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = C.ink; ctx.setLineDash(cur === 1 ? [10, 7] : []); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1; }
-    const endNuc = lerp(from === 7 ? 1 : 0, cur === 7 ? 1 : 0, k);
+    const endNuc = lerp(from === 8 ? 1 : 0, cur === 8 ? 1 : 0, k);
     if (endNuc > .02) B.forEach(b => { if (B.length === 4) { ctx.globalAlpha = endNuc; ctx.beginPath(); ctx.arc(b.x, b.y, 46, 0, Math.PI * 2); ctx.fillStyle = C.nuc; ctx.fill(); ctx.strokeStyle = C.ink; ctx.lineWidth = 2; ctx.stroke(); ctx.globalAlpha = 1; } });
+    const midNuc = st => st === 4 ? 1 : st === 5 ? .7 : 0;
+    const mn = lerp(midNuc(from), midNuc(cur), k);
+    if (mn > .02 && B.length === 2) B.forEach(b => { ctx.globalAlpha = mn; ctx.beginPath(); ctx.arc(b.x, b.y, 72, 0, Math.PI * 2); ctx.fillStyle = C.nuc; ctx.fill(); ctx.strokeStyle = C.ink; ctx.lineWidth = 2; ctx.setLineDash(cur === 5 ? [10, 7] : []); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1; });
     // spindles
-    const spin = st => st === 2 || st === 3 ? 1 : st === 5 || st === 6 ? 2 : 0;
+    const spin = st => st === 2 || st === 3 ? 1 : st === 6 || st === 7 ? 2 : 0;
     const sp = spin(cur);
     if (sp && k > .3) {
       ctx.globalAlpha = (k - .3) / .7; ctx.strokeStyle = C.fibre; ctx.lineWidth = 1.5;
@@ -343,21 +366,28 @@ footer { color: var(--muted); font-size: .85rem; }
       else B.forEach(cell => [-1, 1].forEach(sd => ctx.fillRect(cell.x + sd * (cell.rx - 16) - 6, -6, 12, 12)));
       ctx.globalAlpha = 1;
     }
-    if (labels && (cur === 2 || cur === 5) && k > .8) { ctx.setLineDash([6, 6]); ctx.strokeStyle = C.muted; ctx.lineWidth = 1.5; ctx.beginPath();
+    if (cur === 5 && k > .3) { ctx.globalAlpha = (k - .3) / .7; ctx.fillStyle = C.gold;
+      B.forEach(cell => [-1, 1].forEach(sd => ctx.fillRect(cell.x + sd * (cell.rx - 30) - 6, -78 - 6, 12, 12)));
+      ctx.strokeStyle = C.fibre; ctx.lineWidth = 1.5; B.forEach(cell => [-1, 1].forEach(sd => { ctx.beginPath(); ctx.moveTo(cell.x + sd * (cell.rx - 30), -78); ctx.lineTo(cell.x + sd * (cell.rx - 55), -60); ctx.stroke(); }));
+      ctx.globalAlpha = 1; }
+    if (labels && (cur === 2 || cur === 6) && k > .8) { ctx.setLineDash([6, 6]); ctx.strokeStyle = C.muted; ctx.lineWidth = 1.5; ctx.beginPath();
       if (cur === 2) { ctx.moveTo(0, -120); ctx.lineTo(0, 120); } else B.forEach(b => { ctx.moveTo(b.x, -100); ctx.lineTo(b.x, 100); }); ctx.stroke(); ctx.setLineDash([]); }
-    // chromatids
+    // chromatin (interphase): long thin uncoiled DNA
+    const chrom = lerp(from === 0 ? 1 : 0, cur === 0 ? 1 : 0, k);
+    if (chrom > .02) drawChromatin(ctx, chrom);
+    // chromatids (condensed chromosomes)
     const ch = chromatids();
-    ch.forEach(c => {
+    const cond = 1 - chrom;
+    if (cond > .02) ch.forEach(c => {
       const p = layout(from, c), q = layout(cur, c);
       const x = lerp(p.x, q.x, k), y = lerp(p.y, q.y, k), a = lerp(p.a, q.a, k), sc = lerp(p.sc, q.sc, k);
-      const show = cur === 0 && from === 0 ? .75 : 1;
-      const cc = (cur === 0 && from === 0) || (from === 0 && k < .6) ? { ...c, bot: c.top } : c;   // no crossing over before prophase I
-      drawChromatid(ctx, cc, x, y, a, sc, show);
+      const cc = from === 0 && k < .6 ? { ...c, bot: c.top } : c;   // no crossing over before prophase I
+      drawChromatid(ctx, cc, x, y, a, sc, cond);
     });
     // centromeres joining sisters
     ['A', 'B'].forEach(P => ['m', 'p'].forEach(h => {
       const c0 = ch.find(c => c.P === P && c.h === h && c.s === 0), c1 = ch.find(c => c.P === P && c.h === h && c.s === 1);
-      const j = lerp(layout(from, c0).join, layout(cur, c0).join, k); if (j < .5) return;
+      const j = lerp(layout(from, c0).join, layout(cur, c0).join, k); if (j < .5 || cond < .5) return;
       const p0 = layout(from, c0), q0 = layout(cur, c0), p1 = layout(from, c1), q1 = layout(cur, c1);
       const x = (lerp(p0.x, q0.x, k) + lerp(p1.x, q1.x, k)) / 2, y = (lerp(p0.y, q0.y, k) + lerp(p1.y, q1.y, k)) / 2;
       ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2); ctx.fillStyle = C.gold; ctx.fill(); ctx.strokeStyle = C.ink; ctx.lineWidth = 1; ctx.stroke();
@@ -373,14 +403,15 @@ footer { color: var(--muted); font-size: .85rem; }
     ctx.fillStyle = C.ink; ctx.textAlign = 'left'; ctx.fillText(txt, bx + 8, ly + 1);
   }
   function drawLabels(ctx, B) {
-    if (cur === 0) { label(ctx, 'nucleus', 60, -60, 190, -150); label(ctx, 'chromosomes (DNA copied)', -40, -30, -170, -160); }
+    if (cur === 0) { label(ctx, 'nucleus', 60, -60, 190, -150); label(ctx, 'chromatin: long, thin DNA (copied)', -30, -25, -150, -165); }
     if (cur === 1) { label(ctx, 'homologous pair (tetrad)', -79, -62, -170, -160); if (crossing) label(ctx, 'crossing over', -60, -14, -170, 150); label(ctx, 'centromere', 73, 38, 190, -150); }
     if (cur === 2) { label(ctx, 'pairs line up in the middle', 0, -100, 0, -170); label(ctx, 'spindle fibre', 110, 30, 190, 150); }
     if (cur === 3) { label(ctx, 'homologues pulled apart', -125, -44, -170, -165); label(ctx, 'sister chromatids stay together', 125, 44, 150, 165); }
     if (cur === 4) { label(ctx, 'haploid cell (n)', -150, -90, -190, -165); label(ctx, 'haploid cell (n)', 150, -90, 190, -165); }
-    if (cur === 5) { label(ctx, 'single file in the middle', 156, -80, 170, -165); }
-    if (cur === 6) { label(ctx, 'sister chromatids pulled apart', -80, 45, -150, 165); }
-    if (cur === 7) { label(ctx, '4 different gametes (n)', -76, -66, 0, -150); label(ctx, 'haploid: 2 chromosomes each', 224, 66, 150, 150); }
+    if (cur === 5) { label(ctx, 'nuclear envelope breaks down', -150 + 51, -51, -170, -165); label(ctx, 'new spindle forms', 150 + 90, -78, 190, -165); }
+    if (cur === 6) { label(ctx, 'single file in the middle', 156, -80, 170, -165); }
+    if (cur === 7) { label(ctx, 'sister chromatids pulled apart', -80, 45, -150, 165); }
+    if (cur === 8) { label(ctx, '4 different gametes (n)', -76, -66, 0, -150); label(ctx, 'haploid: 2 chromosomes each', 224, 66, 150, 150); }
   }
 
   // ---------- info + controls ----------
@@ -396,10 +427,10 @@ footer { color: var(--muted); font-size: .85rem; }
     document.getElementById('sMem').textContent = st.mem;
     const fig = document.getElementById('sFig'); fig.hidden = !st.img; if (st.img) document.getElementById('sImg').src = IMG[st.img];
     [...stepsEl.children].forEach((b, i) => i === cur ? b.setAttribute('aria-current', 'step') : b.removeAttribute('aria-current'));
-    document.getElementById('back').disabled = cur === 0; document.getElementById('next').disabled = cur === 7;
+    document.getElementById('back').disabled = cur === 0; document.getElementById('next').disabled = cur === 8;
     document.getElementById('shuffle').disabled = !(cur >= 2);
   }
-  function go(i) { from = cur; cur = clamp(i, 0, 7); animT = 0; t0 = performance.now(); showInfo(); tick(); }
+  function go(i) { from = cur; cur = clamp(i, 0, 8); animT = 0; t0 = performance.now(); showInfo(); tick(); }
   function tick() { requestAnimationFrame(function f(now) { animT = (now - t0) / 1100; render(now); if (animT < 1) requestAnimationFrame(f); }); }
   document.getElementById('next').addEventListener('click', () => { stopPlay(); go(cur + 1); });
   document.getElementById('back').addEventListener('click', () => { stopPlay(); go(cur - 1); });
@@ -410,8 +441,8 @@ footer { color: var(--muted); font-size: .85rem; }
   function stopPlay() { playing = false; clearInterval(playTimer); playBtn.textContent = '▶ Play all'; }
   playBtn.addEventListener('click', () => {
     if (playing) { stopPlay(); return; }
-    playing = true; playBtn.textContent = '❚❚ Pause'; if (cur === 7) go(0);
-    playTimer = setInterval(() => { if (cur >= 7) { stopPlay(); return; } go(cur + 1); }, 2800);
+    playing = true; playBtn.textContent = '❚❚ Pause'; if (cur === 8) go(0);
+    playTimer = setInterval(() => { if (cur >= 8) { stopPlay(); return; } go(cur + 1); }, 2800);
   });
 
   // ---------- gamete drawing (factory + compare) ----------
