@@ -135,7 +135,7 @@ function getAll() {
         let d = {};
         try { d = JSON.parse(v[H.length - 1] || '{}'); } catch (err) {}
         const summary = {};
-        L.cols.forEach((c, i) => summary[c] = v[5 + i]);
+        L.cols.forEach((c, i) => summary[c] = v[5 + i] instanceof Date ? (v[5 + i].getDate() + '/' + (v[5 + i].getMonth() + 1)) : v[5 + i]);   // Sheets may turn "9/9" into a date
         out.push({ id: v[0], email: v[0], name: v[1], cls: v[2], lastActive: v[3] instanceof Date ? v[3].toISOString() : String(v[3]), lastAction: v[4], summary: summary, details: d });
       });
     }
@@ -179,7 +179,10 @@ function saveLesson_(email, L, data) {
     const values = sheet.getLastRow() > 1 ? sheet.getRange(2, 1, sheet.getLastRow() - 1, 1).getValues() : [];
     let idx = -1;
     for (let i = 0; i < values.length; i++) if (String(values[i][0]).toLowerCase() === email.toLowerCase()) { idx = i + 2; break; }
-    if (idx > 0) sheet.getRange(idx, 1, 1, row.length).setValues([row]); else sheet.appendRow(row);
+    if (idx < 0) idx = sheet.getLastRow() + 1;
+    const rng = sheet.getRange(idx, 1, 1, row.length);
+    sheet.getRange(idx, 6, 1, L.cols.length).setNumberFormat('@');   // keep answers like "9/9" as text
+    rng.setValues([row]);
     log.appendRow([now, email, clean_(data.name, 80), clean_(data.cls, 12), L.sheet + ': ' + clean_(data.event, 120)]);
   } finally {
     lock.releaseLock();

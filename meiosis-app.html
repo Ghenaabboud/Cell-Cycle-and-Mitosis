@@ -721,14 +721,14 @@ textarea { width: 100%; min-height: 96px; resize: vertical; }
     const m = id => ST.missions[id] || {};
     return { lesson: 'meiosis', name: STUDENT.name, cls: STUDENT.cls, event,
       summary: {
-        'Stages seen': `${Math.min(ST.seen.length, 9)}/9`,
-        'Missions done': `${missionsCorrect()}/5`,
+        'Stages seen': `${Math.min(ST.seen.length, 9)} of 9`,
+        'Missions done': `${missionsCorrect()} of 5`,
         'Mission 1': m('m1').correct ? `✓ (${m('m1').tries} ${m('m1').tries === 1 ? 'try' : 'tries'})` : m('m1').tries ? `✗ ${m('m1').tries} tries` : '',
         'Mission 2': m('m2').correct ? `✓ (${m('m2').tries} ${m('m2').tries === 1 ? 'try' : 'tries'})` : m('m2').tries ? `✗ ${m('m2').tries} tries` : '',
         'Mission 3': m('m3').correct ? `✓ (${m('m3').tries} ${m('m3').tries === 1 ? 'try' : 'tries'})` : m('m3').tries ? `✗ ${m('m3').tries} tries` : '',
         'Mission 4 (written)': m('m4').text || '',
         'Mission 5': m('m5').correct ? `✓ (${m('m5').tries} ${m('m5').tries === 1 ? 'try' : 'tries'})` : m('m5').tries ? `✗ ${m('m5').tries} tries` : '',
-        'Quiz best': ST.quiz.tries ? `${ST.quiz.best}/7 (${ST.quiz.tries} ${ST.quiz.tries === 1 ? 'try' : 'tries'})` : '',
+        'Quiz best': ST.quiz.tries ? `${ST.quiz.best} of 7 (${ST.quiz.tries} ${ST.quiz.tries === 1 ? 'try' : 'tries'})` : '',
         'Exit ticket (written)': ST.written.exit || '',
       },
       details: ST };

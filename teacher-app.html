@@ -245,7 +245,7 @@ tbody tr:hover td { background: var(--chip); }
     if (!rows.length) { $('meRows').innerHTML = `<tr><td colspan="11" class="empty">${all.length ? 'No students match these filters.' : 'No students yet. Students appear here when they open the meiosis page.'}</td></tr>`; $('meMissed').innerHTML = ''; return; }
     $('meRows').innerHTML = rows.map(r => {
       const S = r.summary, [a, cls] = ago(r.lastActive);
-      let h = `<tr data-id="${esc(r.id)}"><td><b>${esc(r.name)}</b><div class="muted" style="font-size:.8rem">${esc(r.email || '')}</div></td><td>${esc(r.cls)}</td><td class="mcell">${esc(S['Stages seen'] || '0/9')}</td>
+      let h = `<tr data-id="${esc(r.id)}"><td><b>${esc(r.name)}</b><div class="muted" style="font-size:.8rem">${esc(r.email || '')}</div></td><td>${esc(r.cls)}</td><td class="mcell">${esc(S['Stages seen'] || '0 of 9')}</td>
         <td>${cell(S['Mission 1'])}</td><td>${cell(S['Mission 2'])}</td><td>${cell(S['Mission 3'])}</td><td>${wcell(S['Mission 4 (written)'])}</td><td>${cell(S['Mission 5'])}</td>
         <td class="mcell">${esc(S['Quiz best'] || '–')}</td><td>${wcell(S['Exit ticket (written)'])}</td><td class="ago ${cls}">${a}</td></tr>`;
       if (open.has(r.id)) {
