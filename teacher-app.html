@@ -269,6 +269,8 @@ tbody tr:hover td { background: var(--chip); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
   load(); setTimer();
+  // open straight on the Meiosis tab when the link has ?lesson=meiosis
+  try { if (GAS && google.script.url) google.script.url.getLocation(loc => { if (loc && loc.parameter && loc.parameter.lesson === 'meiosis') document.querySelector('.ltab[data-l="me"]').click(); }); } catch (e) {}
 })();
 </script>
 </body>

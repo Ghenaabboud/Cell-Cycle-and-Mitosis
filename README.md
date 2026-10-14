@@ -10,6 +10,7 @@ EISM Science · Year 11 Biology · Unit 2: Cell Division and Reproduction
   (opens the Apps Script app with `?page=meiosis`; missions, quiz and exit ticket are saved to the **Meiosis** tab)
 - **Teacher panel:** https://ghenaabboud.github.io/Cell-Cycle-and-Mitosis/teacher.html
   (opens only for the owner of the Apps Script)
+- **Teacher panel, opening on the Meiosis tab:** https://ghenaabboud.github.io/Cell-Cycle-and-Mitosis/teacher-meiosis.html
 
 ## How it works
 
