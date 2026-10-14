@@ -6,6 +6,8 @@ EISM Science · Year 11 Biology · Unit 2: Cell Division and Reproduction
 
 - **Students:** https://ghenaabboud.github.io/Cell-Cycle-and-Mitosis/
   (this sends them to the Apps Script app; they sign in with their @eischools.ae account)
+- **Meiosis simulator:** https://ghenaabboud.github.io/Cell-Cycle-and-Mitosis/meiosis.html
+  (opens the Apps Script app with `?page=meiosis`; missions, quiz and exit ticket are saved to the **Meiosis** tab)
 - **Teacher panel:** https://ghenaabboud.github.io/Cell-Cycle-and-Mitosis/teacher.html
   (opens only for the owner of the Apps Script)
 
@@ -14,6 +16,7 @@ EISM Science · Year 11 Biology · Unit 2: Cell Division and Reproduction
 | File | What it is |
 |---|---|
 | `app.html` | The student page: name and class sign-in, the learning path, checkpoints. |
+| `meiosis-app.html` | The meiosis simulator with embedded missions, quiz and exit ticket. |
 | `teacher-app.html` | The teacher panel: every student's steps, checkpoint scores and the questions they got wrong. |
 | `index.html`, `teacher.html` | Short pages that open the Apps Script app. |
 | `apps-script/Code.gs` | The script that lives in the teacher's Google Sheet. It serves the two pages and saves progress in the Sheet. |
@@ -34,4 +37,5 @@ Deployment settings: **Execute as: Me** · **Who has access: Anyone within EISM*
 ## Data
 
 - The **Progress** tab has one row per student (school email, name, class, steps, checkpoint scores).
+- The **Meiosis** tab has one row per student: stages seen, each mission, written answers, quiz and exit ticket.
 - The **Activity log** tab has one row per action, with the time.

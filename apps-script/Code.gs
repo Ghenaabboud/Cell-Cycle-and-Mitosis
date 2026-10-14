@@ -5,8 +5,9 @@
  * This script lives inside YOUR Google Sheet (Extensions → Apps Script).
  * It serves the student page and the teacher panel, and saves progress in this Sheet.
  *
- *   Student link:  your Web app URL
- *   Teacher link:  your Web app URL + ?page=teacher   (opens only for you, the owner of this script)
+ *   Cell cycle & mitosis:  your Web app URL
+ *   Meiosis:               your Web app URL + ?page=meiosis
+ *   Teacher panel:         your Web app URL + ?page=teacher   (opens only for you, the owner of this script)
  *
  * Deploy as: Web app · Execute as: Me · Who has access: Anyone within your school.
  * The page designs are loaded from your GitHub repository, so page updates appear without redeploying.
@@ -14,6 +15,14 @@
 
 const PAGES_BASE = 'https://raw.githubusercontent.com/Ghenaabboud/Cell-Cycle-and-Mitosis/main/';
 const PROGRESS_SHEET = 'Progress';
+// Other lessons: one sheet each. The student page sends a value for each column below.
+const LESSONS = {
+  meiosis: {
+    sheet: 'Meiosis',
+    cols: ['Stages seen', 'Missions done', 'Mission 1', 'Mission 2', 'Mission 3', 'Mission 4 (written)', 'Mission 5', 'Quiz best', 'Exit ticket (written)']
+  }
+};
+function lessonHeaders_(L) { return ['School email', 'Name', 'Class', 'Last active', 'Last action'].concat(L.cols, ['Details (do not edit)']); }
 const LOG_SHEET = 'Activity log';
 const HEADERS = [
   'School email', 'Name', 'Class', 'Last active', 'Last action', 'Steps done',
@@ -30,8 +39,9 @@ function doGet(e) {
     if (!isTeacher_()) {
       return HtmlService.createHtmlOutput('<p style="font-family:sans-serif;padding:24px">This page is for the teacher only.</p>');
     }
-    return serve_('teacher-app.html', 'Teacher Panel · Cell Cycle and Mitosis');
+    return serve_('teacher-app.html', 'Teacher Panel');
   }
+  if (page === 'meiosis') return serve_('meiosis-app.html', 'Meiosis Simulator');
   return serve_('app.html', 'Cell Cycle and Mitosis');
 }
 
@@ -46,8 +56,9 @@ function serve_(file, title) {
 }
 
 // ---------- called by the student page ----------
-function getMe() {
+function getMe(lesson) {
   const email = Session.getActiveUser().getEmail();
+  if (lesson && LESSONS[lesson]) return getMeLesson_(email, LESSONS[lesson]);
   const found = findRow_(email);
   if (!found) return { email: email };
   const v = found.values;
@@ -60,6 +71,7 @@ function saveProgress(data) {
   const email = Session.getActiveUser().getEmail();
   if (!email) throw new Error('Please sign in with your school account.');
   data = data || {};
+  if (data.lesson && LESSONS[data.lesson]) return saveLesson_(email, LESSONS[data.lesson], data);
   const name = clean_(data.name, 80);
   const cls = clean_(data.cls, 12);
   const event = clean_(data.event, 120);
@@ -115,7 +127,64 @@ function getAll() {
       });
     });
   }
-  return { rows: rows, updated: new Date().toISOString(), sheetUrl: ss.getUrl() };
+  const lessons = {};
+  Object.keys(LESSONS).forEach(k => {
+    const L = LESSONS[k], H = lessonHeaders_(L), sh = ss.getSheetByName(L.sheet), out = [];
+    if (sh && sh.getLastRow() > 1) {
+      sh.getRange(2, 1, sh.getLastRow() - 1, H.length).getValues().forEach(v => {
+        let d = {};
+        try { d = JSON.parse(v[H.length - 1] || '{}'); } catch (err) {}
+        const summary = {};
+        L.cols.forEach((c, i) => summary[c] = v[5 + i]);
+        out.push({ id: v[0], email: v[0], name: v[1], cls: v[2], lastActive: v[3] instanceof Date ? v[3].toISOString() : String(v[3]), lastAction: v[4], summary: summary, details: d });
+      });
+    }
+    lessons[k] = { cols: L.cols, rows: out };
+  });
+  return { rows: rows, lessons: lessons, updated: new Date().toISOString(), sheetUrl: ss.getUrl() };
+}
+
+// ---------- other lessons (e.g. meiosis) ----------
+function getMeLesson_(email, L) {
+  const res = { email: email };
+  const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(L.sheet);
+  const H = lessonHeaders_(L);
+  if (email && sh && sh.getLastRow() > 1) {
+    const values = sh.getRange(2, 1, sh.getLastRow() - 1, H.length).getValues();
+    for (let i = 0; i < values.length; i++) {
+      if (String(values[i][0]).toLowerCase() === email.toLowerCase()) {
+        res.name = values[i][1]; res.cls = values[i][2];
+        try { res.details = JSON.parse(values[i][H.length - 1] || '{}'); } catch (err) {}
+        return res;
+      }
+    }
+  }
+  const other = findRow_(email);   // reuse the name and class from the cell cycle lesson
+  if (other) { res.name = other.values[1]; res.cls = other.values[2]; }
+  return res;
+}
+
+function saveLesson_(email, L, data) {
+  const H = lessonHeaders_(L);
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = getSheet_(ss, L.sheet, H);
+    const log = getSheet_(ss, LOG_SHEET, ['Time', 'School email', 'Name', 'Class', 'Action']);
+    const now = new Date();
+    const sum = data.summary || {};
+    const row = [email, clean_(data.name, 80), clean_(data.cls, 12), now, clean_(data.event, 120)]
+      .concat(L.cols.map(c => clean_(sum[c], 2000)), [JSON.stringify(data.details || {}).slice(0, 45000)]);
+    const values = sheet.getLastRow() > 1 ? sheet.getRange(2, 1, sheet.getLastRow() - 1, 1).getValues() : [];
+    let idx = -1;
+    for (let i = 0; i < values.length; i++) if (String(values[i][0]).toLowerCase() === email.toLowerCase()) { idx = i + 2; break; }
+    if (idx > 0) sheet.getRange(idx, 1, 1, row.length).setValues([row]); else sheet.appendRow(row);
+    log.appendRow([now, email, clean_(data.name, 80), clean_(data.cls, 12), L.sheet + ': ' + clean_(data.event, 120)]);
+  } finally {
+    lock.releaseLock();
+  }
+  return true;
 }
 
 // ---------- helpers ----------

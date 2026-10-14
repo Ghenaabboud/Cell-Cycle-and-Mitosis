@@ -72,13 +72,22 @@ tbody tr:hover td { background: var(--chip); }
 .missed ol { margin: 8px 0 0; padding-left: 22px; display: grid; gap: 6px; }
 .missed li span { color: var(--muted); font-variant-numeric: tabular-nums; }
 .empty { padding: 24px; text-align: center; color: var(--muted); }
+.ltabs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.ltab { border: 2px solid var(--line); background: var(--surface); border-radius: 999px; padding: 8px 18px; font-weight: 700; }
+.ltab[aria-selected="true"] { background: var(--stain); border-color: var(--stain); color: var(--surface); }
+.mcell { white-space: nowrap; font-weight: 700; font-variant-numeric: tabular-nums; }
+.ok { color: var(--good); } .no { color: var(--bad); }
+.written { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-top: 6px; white-space: pre-wrap; }
+.kwflag { font-size: .78rem; font-weight: 700; border-radius: 999px; padding: 1px 8px; margin-left: 6px; }
+.kwflag.y { background: color-mix(in srgb, var(--good) 18%, var(--surface)); } .kwflag.n { background: color-mix(in srgb, var(--gold) 30%, var(--surface)); }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
     <div class="eyebrow">EISM Science · Teacher only</div>
-    <h1>Teacher Panel: Cell Cycle and Mitosis</h1>
+    <h1>Teacher Panel</h1>
+    <div class="ltabs" role="tablist" aria-label="Lesson"><button type="button" role="tab" class="ltab" data-l="cc" aria-selected="true">Cell cycle &amp; mitosis</button><button type="button" role="tab" class="ltab" data-l="me" aria-selected="false">Meiosis</button></div>
   </header>
 
   <!-- ===== dashboard ===== -->
@@ -100,6 +109,7 @@ tbody tr:hover td { background: var(--chip); }
           <option value="name">Name</option><option value="progress">Least progress first</option><option value="active">Most recently active</option>
         </select></label>
       </div>
+      <div id="ccView">
       <div class="tablewrap">
         <table>
           <thead><tr><th>Student</th><th>Class</th><th>Steps (1–6)</th><th>Checkpoint A · cell cycle</th><th>Checkpoint B · mitosis</th><th>Last active</th><th>Last action</th></tr></thead>
@@ -112,6 +122,21 @@ tbody tr:hover td { background: var(--chip); }
         <p class="muted">From each student’s latest attempt, for the students shown above. Use these to re-teach.</p>
         <ol id="missed"></ol>
       </section>
+      </div>
+      <div id="meView" hidden>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Student</th><th>Class</th><th>Stages</th><th>M1</th><th>M2</th><th>M3</th><th>M4 written</th><th>M5 ★</th><th>Quiz</th><th>Exit ticket</th><th>Last active</th></tr></thead>
+            <tbody id="meRows"></tbody>
+          </table>
+        </div>
+        <p class="muted">Tap a student to read their written answers and see the quiz questions they got wrong. ✓ = correct (number of tries in brackets).</p>
+        <section class="card missed">
+          <h2>Where students struggled</h2>
+          <p class="muted">Missions answered wrongly at the first try, and quiz questions missed in the latest attempt, for the students shown above.</p>
+          <ol id="meMissed"></ol>
+        </section>
+      </div>
     </div>
   </main>
 </div>
@@ -119,7 +144,8 @@ tbody tr:hover td { background: var(--chip); }
 <script>
 (function () {
   const $ = id => document.getElementById(id);
-  let data = [], open = new Set(), timer = null;
+  let data = [], open = new Set(), timer = null, lessons = {}, lesson = 'cc';
+  document.querySelectorAll('.ltab').forEach(b => b.addEventListener('click', () => { lesson = b.dataset.l; document.querySelectorAll('.ltab').forEach(x => x.setAttribute('aria-selected', x === b)); $('ccView').hidden = lesson !== 'cc'; $('meView').hidden = lesson !== 'me'; fillClasses(); render(); }));
   const GAS = (typeof google !== 'undefined' && google.script && google.script.run) ? google.script.run : null;
   $('refresh').addEventListener('click', load);
   $('auto').addEventListener('change', setTimer);
@@ -130,8 +156,8 @@ tbody tr:hover td { background: var(--chip); }
     $('updated').textContent = 'Loading…';
     google.script.run
       .withSuccessHandler(json => {
-        data = json.rows || [];
-        $('updated').textContent = 'Updated ' + new Date(json.updated || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' · ' + data.length + ' students';
+        data = json.rows || []; lessons = json.lessons || {};
+        $('updated').textContent = 'Updated ' + new Date(json.updated || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         if (json.sheetUrl) { $('sheetLink').href = json.sheetUrl; $('sheetLink').hidden = false; }
         fillClasses(); render();
       })
@@ -140,7 +166,7 @@ tbody tr:hover td { background: var(--chip); }
   }
   function fillClasses() {
     const sel = $('fClass'), cur = sel.value;
-    const classes = [...new Set(data.map(r => String(r.cls)))].sort();
+    const classes = [...new Set(rowsFor().map(r => String(r.cls)))].sort();
     sel.innerHTML = '<option value="">All classes</option>' + classes.map(c => `<option>${esc(c)}</option>`).join('');
     sel.value = classes.includes(cur) ? cur : '';
   }
@@ -173,7 +199,9 @@ tbody tr:hover td { background: var(--chip); }
     const h = Math.round(m / 60); if (h < 24) return [h + ' h ago', ''];
     return [new Date(iso).toLocaleDateString(), ''];
   }
+  function rowsFor() { return lesson === 'me' ? ((lessons.meiosis || {}).rows || []) : data; }
   function render() {
+    if (lesson === 'me') { renderMe(); return; }
     const rows = shown();
     const n = rows.length;
     const tile = (v, l) => `<div class="tile"><b>${v}</b><span>${l}</span></div>`;
@@ -201,6 +229,42 @@ tbody tr:hover td { background: var(--chip); }
     rows.forEach(r => Object.values(r.quiz || {}).forEach(q => (q.wrong || []).forEach(w => count[w] = (count[w] || 0) + 1)));
     const top = Object.entries(count).sort((a, b) => b[1] - a[1]).slice(0, 8);
     $('missed').innerHTML = top.length ? top.map(([q, c]) => `<li>${esc(q)} <span>· ${c} ${c === 1 ? 'student' : 'students'}</span></li>`).join('') : '<li class="muted">No mistakes recorded yet.</li>';
+  }
+  function renderMe() {
+    const c = $('fClass').value, q = $('fName').value.trim().toLowerCase(), so = $('fSort').value;
+    const all = (lessons.meiosis || {}).rows || [];
+    const num = v => parseInt(String(v || '0'), 10) || 0;
+    const prog = r => num(r.summary['Missions done']) + (r.summary['Exit ticket (written)'] ? 1 : 0) + (r.summary['Quiz best'] ? 1 : 0);
+    let rows = all.filter(r => (!c || String(r.cls) === c) && (!q || String(r.name).toLowerCase().includes(q)));
+    rows.sort((a, b) => so === 'progress' ? prog(a) - prog(b) : so === 'active' ? new Date(b.lastActive) - new Date(a.lastActive) : String(a.name).localeCompare(String(b.name)));
+    const tile = (v, l) => `<div class="tile"><b>${v}</b><span>${l}</span></div>`;
+    $('tiles').innerHTML = tile(rows.length, 'students') + tile(rows.filter(r => num(r.summary['Stages seen']) >= 9).length, 'saw all 9 stages')
+      + tile(rows.filter(r => num(r.summary['Missions done']) >= 5).length, 'finished all 5 missions') + tile(rows.filter(r => r.summary['Exit ticket (written)']).length, 'submitted the exit ticket');
+    const cell = v => { v = String(v || ''); return v ? `<span class="mcell ${v.startsWith('✓') ? 'ok' : 'no'}">${esc(v)}</span>` : '<span class="muted">–</span>'; };
+    const wcell = v => v ? '<span class="mcell ok">✓ written</span>' : '<span class="muted">–</span>';
+    if (!rows.length) { $('meRows').innerHTML = `<tr><td colspan="11" class="empty">${all.length ? 'No students match these filters.' : 'No students yet. Students appear here when they open the meiosis page.'}</td></tr>`; $('meMissed').innerHTML = ''; return; }
+    $('meRows').innerHTML = rows.map(r => {
+      const S = r.summary, [a, cls] = ago(r.lastActive);
+      let h = `<tr data-id="${esc(r.id)}"><td><b>${esc(r.name)}</b><div class="muted" style="font-size:.8rem">${esc(r.email || '')}</div></td><td>${esc(r.cls)}</td><td class="mcell">${esc(S['Stages seen'] || '0/9')}</td>
+        <td>${cell(S['Mission 1'])}</td><td>${cell(S['Mission 2'])}</td><td>${cell(S['Mission 3'])}</td><td>${wcell(S['Mission 4 (written)'])}</td><td>${cell(S['Mission 5'])}</td>
+        <td class="mcell">${esc(S['Quiz best'] || '–')}</td><td>${wcell(S['Exit ticket (written)'])}</td><td class="ago ${cls}">${a}</td></tr>`;
+      if (open.has(r.id)) {
+        const d = r.details || {}, m4 = (d.missions || {}).m4 || {};
+        const wrong = ((d.quiz || {}).wrong || []).map(w => `<li>${esc(w)}</li>`).join('');
+        h += `<tr class="detail"><td colspan="11">
+          <div><b>Mission 4: why are no two gametes the same?</b>${S['Mission 4 (written)'] ? `<span class="kwflag ${m4.hasKeywords ? 'y' : 'n'}">${m4.hasKeywords ? 'uses both key words' : 'missing a key word'}</span><div class="written">${esc(S['Mission 4 (written)'])}</div>` : ' <span class="muted">Not written yet.</span>'}</div>
+          <div style="margin-top:10px"><b>Exit ticket: why aren’t siblings identical?</b>${S['Exit ticket (written)'] ? `<div class="written">${esc(S['Exit ticket (written)'])}</div>` : ' <span class="muted">Not written yet.</span>'}</div>
+          <div style="margin-top:10px"><b>Quiz questions wrong (latest attempt):</b>${wrong ? `<ul>${wrong}</ul>` : ' <span class="muted">None.</span>'}</div></td></tr>`;
+      }
+      return h;
+    }).join('');
+    $('meRows').querySelectorAll('tr[data-id]').forEach(tr => tr.addEventListener('click', () => { const id = tr.dataset.id; open.has(id) ? open.delete(id) : open.add(id); renderMe(); }));
+    const count = {}, names = { m1: 'Mission 1: cells and chromosomes at the end', m2: 'Mission 2: what crossing over does', m3: 'Mission 3: why shuffling changes the gametes', m5: 'Mission 5: which division separates what' };
+    rows.forEach(r => { const d = r.details || {};
+      Object.entries(d.missions || {}).forEach(([k, v]) => { if (names[k] && v.tries && v.firstTry === false) count[names[k]] = (count[names[k]] || 0) + 1; });
+      ((d.quiz || {}).wrong || []).forEach(w => count['Quiz: ' + w] = (count['Quiz: ' + w] || 0) + 1); });
+    const top = Object.entries(count).sort((a, b) => b[1] - a[1]).slice(0, 8);
+    $('meMissed').innerHTML = top.length ? top.map(([t, n]) => `<li>${esc(t)} <span>· ${n} ${n === 1 ? 'student' : 'students'}</span></li>`).join('') : '<li class="muted">No mistakes recorded yet.</li>';
   }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
